@@ -1859,6 +1859,26 @@ export class EmbedShapeUtil extends BaseBoxShapeUtil<TLEmbedShape> {
     // (undocumented)
     static migrations: TLPropsMigrations;
     // (undocumented)
+    onBeforeCreate(next: TLEmbedShape): {
+        id: TLShapeId_2;
+        index: IndexKey;
+        isLocked: boolean;
+        meta: JsonObject;
+        opacity: number;
+        parentId: TLParentId;
+        props: {
+            border: "shadow";
+            h: number;
+            url: string;
+            w: number;
+        };
+        rotation: number;
+        type: "embed";
+        typeName: "shape";
+        x: number;
+        y: number;
+    } | undefined;
+    // (undocumented)
     onResize(shape: TLEmbedShape, info: TLResizeInfo<TLEmbedShape>): TLEmbedShape;
     // (undocumented)
     options: EmbedShapeOptions;
@@ -1873,7 +1893,7 @@ export class EmbedShapeUtil extends BaseBoxShapeUtil<TLEmbedShape> {
 
 // @public (undocumented)
 export interface EmbedShapeUtilDisplayValues {
-    // (undocumented)
+    // @deprecated (undocumented)
     showShadow: boolean;
 }
 
