@@ -1245,9 +1245,13 @@ const ThreadPin = memo(function ThreadPin({
 	}
 
 	const deleteThread = () => {
+		if (!currentUserId) return
 		openThreadId.set(editor, null)
+		// Soft delete: set the flag rather than removing records — the server prunes the thread
+		// and its comments once the flag is persisted, so no client ever deletes records it
+		// doesn't own. Creator-only; the server vetoes anyone else (and any hard delete).
 		commitCommentMutation(editor, () =>
-			removeCommentRecords(editor, [thread.id, ...comments.map((c) => c.id)])
+			putCommentRecords(editor, [{ ...thread, deleted: { at: Date.now(), by: currentUserId } }])
 		)
 	}
 
@@ -1258,13 +1262,13 @@ const ThreadPin = memo(function ThreadPin({
 
 	const deleteComment = (comment: TLComment) => {
 		commitCommentMutation(editor, () => {
-			// Deleting a thread's only comment deletes the thread — an empty thread has no surface.
+			// Deleting a thread's only comment hides the thread — an empty thread has no surface
+			// (see useVisibleCommentThreads). The thread record itself is left alone: the deleter
+			// may not be its creator, and only creators may delete threads.
 			if (comments.length === 1) {
 				openThreadId.set(editor, null)
-				removeCommentRecords(editor, [thread.id, comment.id])
-			} else {
-				removeCommentRecords(editor, [comment.id])
 			}
+			removeCommentRecords(editor, [comment.id])
 		})
 	}
 
@@ -1371,7 +1375,8 @@ const ThreadPin = memo(function ThreadPin({
 					/>
 				</button>
 			)}
-			{currentUserId && (
+			{/* Deleting a thread is creator-only (server-enforced), and it's the menu's only item. */}
+			{currentUserId && currentUserId === thread.createdBy && (
 				<TldrawUiDropdownMenuRoot id={`comment-thread-actions-${thread.id}`}>
 					<TldrawUiDropdownMenuTrigger>
 						<button
