@@ -212,14 +212,6 @@ export class EmbedShapeUtil extends BaseBoxShapeUtil<TLEmbedShape> {
 		}
 	}
 
-	override onBeforeCreate(next: TLEmbedShape) {
-		// New embeds always start with the shadow border. `border` is a shared style,
-		// so without this a new embed would inherit the last-used value from another
-		// shape rather than its own default.
-		if (next.props.border === 'shadow') return
-		return { ...next, props: { ...next.props, border: 'shadow' as const } }
-	}
-
 	override getGeometry(shape: TLEmbedShape) {
 		return super.getGeometry(shape)
 	}

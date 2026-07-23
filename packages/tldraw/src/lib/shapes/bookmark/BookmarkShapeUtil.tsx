@@ -123,14 +123,7 @@ export class BookmarkShapeUtil extends BaseBoxShapeUtil<TLBookmarkShape> {
 	}
 
 	override onBeforeCreate(next: TLBookmarkShape) {
-		// New bookmarks always start with the shadow border. `border` is a shared
-		// style, so without this a new bookmark would inherit the last-used value
-		// from another shape (e.g. `lined` or `none`) rather than its own default.
-		const shape =
-			next.props.border === 'shadow'
-				? next
-				: { ...next, props: { ...next.props, border: 'shadow' as const } }
-		return setBookmarkHeight(this.editor, shape)
+		return setBookmarkHeight(this.editor, next)
 	}
 
 	override onBeforeUpdate(prev: TLBookmarkShape, shape: TLBookmarkShape) {
