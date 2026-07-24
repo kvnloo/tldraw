@@ -1,7 +1,12 @@
 export interface ArtifactNode {
 	id: string
 	position: { x: number; y: number }
-	data: { label: string }
+	data: {
+		label: string
+		issueId?: number
+		state?: number
+		[key: string]: unknown
+	}
 	type?: string
 }
 
