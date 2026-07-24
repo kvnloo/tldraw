@@ -1,0 +1,28 @@
+.zer0-artifact {
+	display: grid;
+	grid-template-rows: 36px 1fr;
+	overflow: hidden;
+	border: 1px solid var(--color-panel-contrast);
+	border-radius: 8px;
+	background: var(--color-panel);
+	box-shadow: var(--shadow-2);
+}
+
+.zer0-artifact header {
+	display: flex;
+	align-items: center;
+	padding: 0 12px;
+	border-bottom: 1px solid var(--color-panel-contrast);
+	font-weight: 600;
+}
+
+.zer0-artifact__graph {
+	position: relative;
+	min-width: 0;
+	min-height: 0;
+}
+
+.zer0-canvas-controls {
+	display: flex;
+	margin: 8px;
+}
