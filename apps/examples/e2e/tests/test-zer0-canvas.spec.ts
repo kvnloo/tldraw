@@ -143,6 +143,7 @@ test('Google Meet Pub/Sub becomes persistent tldraw artifacts', async ({
 	browser,
 }) => {
 	test.skip(!canvasUrl || !relayUrl || !meetEventPath, 'run through integration/canvas-canary')
+	if (!meetEventPath) throw new Error('ZERO_MEET_EVENT is required')
 	const roomUrl = `${canvasUrl}/zer0-canvas/full?roomId=meet-${randomUUID()}`
 	await gotoCanvas(page, roomUrl)
 	await expect(page.getByTestId('zer0-relay-state')).toHaveAttribute('data-state', 'live')
@@ -181,11 +182,64 @@ test('Google Meet Pub/Sub becomes persistent tldraw artifacts', async ({
 	}
 })
 
+test('consented live Meet segment becomes a persistent shared artifact', async ({
+	page,
+	request,
+	context,
+}) => {
+	test.skip(!canvasUrl || !relayUrl, 'run through integration/canvas-canary')
+	const identity = randomUUID()
+	const roomUrl = `${canvasUrl}/zer0-canvas/full?roomId=meet-live-${identity}`
+	await gotoCanvas(page, roomUrl)
+	await expect(page.getByTestId('zer0-relay-state')).toHaveAttribute('data-state', 'live')
+
+	const title = `Create task verify live Meet capture ${identity}`
+	const issueTitle = `verify live Meet capture ${identity}`
+	const event = {
+		v: 1,
+		seq: 0,
+		ts_ns: Date.now() * 1_000_000,
+		source: 'google.meet.live',
+		kind: 'meeting.transcript.final',
+		subject: `meet-live:browser-meet-${identity}:consent-${identity}:1`,
+		causation: `meet-consent:consent-${identity}`,
+		payload: {
+			provider: 'google-meet-browser-capture',
+			conference: `browser-meet-${identity}`,
+			participant: 'local-user',
+			consent: `consent-${identity}`,
+			segment: 1,
+			realtime: true,
+			text: title,
+		},
+	}
+	const response = await request.post(`${relayUrl}/v1/events`, { data: event })
+	expect(response.status()).toBe(202)
+	expect(await response.json()).toEqual({ ok: true, emitted: 5 })
+
+	const note = page.locator(`[data-testid="zer0-artifact"][data-artifact-title="${title}"]`)
+	const issue = page.locator(`[data-testid="zer0-artifact"][data-artifact-title="${issueTitle}"]`)
+	await expect(note).toHaveCount(1)
+	await expect(issue).toHaveCount(1)
+
+	const synced = await context.newPage()
+	await synced.route(`${relayUrl}/v1/events`, (route) => route.abort())
+	await gotoCanvas(synced, roomUrl)
+	await expect(synced.getByTestId('zer0-sync-state')).toHaveAttribute('data-state', 'synced-remote')
+	await expect(
+		synced.locator(`[data-testid="zer0-artifact"][data-artifact-title="${title}"]`)
+	).toHaveCount(1)
+	await expect(
+		synced.locator(`[data-testid="zer0-artifact"][data-artifact-title="${issueTitle}"]`)
+	).toHaveCount(1)
+})
+
 test('BYO LLM proposal requires approval before persistent canvas mutation', async ({
 	browser,
 	request,
 }) => {
 	test.skip(!canvasUrl || !relayUrl || !llmProposalPath, 'run through integration/canvas-canary')
+	if (!llmProposalPath) throw new Error('ZERO_LLM_PROPOSAL is required')
 	const roomUrl = `${canvasUrl}/zer0-canvas/full?roomId=llm-${randomUUID()}`
 	const firstContext = await browser.newContext()
 	const secondContext = await browser.newContext()

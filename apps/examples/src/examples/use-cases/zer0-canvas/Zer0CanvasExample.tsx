@@ -11,6 +11,8 @@ import {
 import 'tldraw/tldraw.css'
 import '@xyflow/react/dist/style.css'
 import { defaultArtifact } from './artifact'
+import type { MeetCapture, MeetCaptureState } from './meet'
+import { startMeetCapture } from './meet'
 import type { CanvasProposal } from './relay'
 import {
 	parseArtifactEvent,
@@ -54,8 +56,18 @@ function ArtifactControls() {
 	const [proposalError, setProposalError] = useState(false)
 	const [voiceState, setVoiceState] = useState<VoiceAdapterState>('idle')
 	const [transcript, setTranscript] = useState('')
+	const [meetState, setMeetState] = useState<MeetCaptureState | 'idle' | 'error'>('idle')
+	const [meetTranscript, setMeetTranscript] = useState('')
 	const recording = useRef<VoiceRecording | null>(null)
+	const meetCapture = useRef<MeetCapture | null>(null)
 	const releaseRequested = useRef(false)
+	useEffect(
+		() => () => {
+			recording.current?.cancel()
+			void meetCapture.current?.stop()
+		},
+		[]
+	)
 	const pending = proposals[0]
 	const finishRecording = async (current: VoiceRecording) => {
 		if (recording.current !== current) return
@@ -91,6 +103,34 @@ function ArtifactControls() {
 		releaseRequested.current = true
 		const current = recording.current
 		if (current) await finishRecording(current)
+	}
+	const startMeet = async () => {
+		if (meetCapture.current || (meetState !== 'idle' && meetState !== 'error')) return
+		setMeetState('requesting')
+		const consentId = crypto.randomUUID()
+		try {
+			meetCapture.current = await startMeetCapture({
+				conference: `browser-meet-${consentId}`,
+				participant: 'local-user',
+				consentId,
+				onState: (state) => setMeetState(state === 'stopped' ? 'idle' : state),
+				onTranscript: setMeetTranscript,
+			})
+		} catch {
+			meetCapture.current = null
+			setMeetState('error')
+		}
+	}
+	const stopMeet = async () => {
+		const current = meetCapture.current
+		meetCapture.current = null
+		if (!current) return
+		try {
+			await current.stop()
+			setMeetState('idle')
+		} catch {
+			setMeetState('error')
+		}
 	}
 	const label = publishing
 		? 'Saving'
@@ -187,6 +227,31 @@ function ArtifactControls() {
 				{transcript ? (
 					<span data-testid="zer0-voice-transcript" title={transcript}>
 						{transcript}
+					</span>
+				) : null}
+			</div>
+			<div className="zer0-meet">
+				<button
+					type="button"
+					data-testid="zer0-meet-capture"
+					data-state={meetState}
+					onClick={() => (meetCapture.current ? void stopMeet() : void startMeet())}
+					disabled={meetState === 'requesting' || meetState === 'transcribing'}
+					title="Explicitly share the active Google Meet tab with tab audio"
+				>
+					{meetState === 'requesting'
+						? 'Choose Meet tab…'
+						: meetState === 'listening'
+							? 'Stop Meet capture'
+							: meetState === 'transcribing'
+								? 'Transcribing Meet…'
+								: meetState === 'error'
+									? 'Meet capture failed — retry'
+									: 'Track Meet live'}
+				</button>
+				{meetTranscript ? (
+					<span data-testid="zer0-meet-transcript" title={meetTranscript}>
+						{meetTranscript}
 					</span>
 				) : null}
 			</div>
