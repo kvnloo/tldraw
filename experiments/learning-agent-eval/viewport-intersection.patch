@@ -1,0 +1,20 @@
+diff --git a/templates/agent/client/parts/BlurryShapesPartUtil.ts b/templates/agent/client/parts/BlurryShapesPartUtil.ts
+--- a/templates/agent/client/parts/BlurryShapesPartUtil.ts
++++ b/templates/agent/client/parts/BlurryShapesPartUtil.ts
+@@
+-				return contextBoundsBox.includes(bounds)
++				return contextBoundsBox.collides(bounds)
+
+diff --git a/templates/agent/client/parts/PeripheralShapesPartUtil.ts b/templates/agent/client/parts/PeripheralShapesPartUtil.ts
+--- a/templates/agent/client/parts/PeripheralShapesPartUtil.ts
++++ b/templates/agent/client/parts/PeripheralShapesPartUtil.ts
+@@
+-				if (contextBoundsBox.includes(bounds)) return
++				if (contextBoundsBox.collides(bounds)) return
+
+diff --git a/templates/agent/client/parts/ScreenshotPartUtil.ts b/templates/agent/client/parts/ScreenshotPartUtil.ts
+--- a/templates/agent/client/parts/ScreenshotPartUtil.ts
++++ b/templates/agent/client/parts/ScreenshotPartUtil.ts
+@@
+-				return contextBoundsBox.includes(bounds)
++				return contextBoundsBox.collides(bounds)
