@@ -1,0 +1,28 @@
+diff --git a/apps/mcp-app/src/widget/exec-helpers.ts b/apps/mcp-app/src/widget/exec-helpers.ts
+--- a/apps/mcp-app/src/widget/exec-helpers.ts
++++ b/apps/mcp-app/src/widget/exec-helpers.ts
+@@
+ function serializeResult(result: unknown) {
+ 	try {
+-		return JSON.parse(JSON.stringify(result))
++		return JSON.parse(
++			JSON.stringify(result, (_key, value) => (value instanceof Set ? Array.from(value) : value))
++		)
+ 	} catch {
+ 		return result != null ? String(result) : undefined
+ 	}
+ }
+
+diff --git a/apps/mcp-app/src/widget/exec-helpers.test.ts b/apps/mcp-app/src/widget/exec-helpers.test.ts
+--- a/apps/mcp-app/src/widget/exec-helpers.test.ts
++++ b/apps/mcp-app/src/widget/exec-helpers.test.ts
+@@
+ describe('executeCode timeout race', () => {
++	it('serializes Set return values as arrays', async () => {
++		const result = await executeCode(stubEditor, 'return new Set(["box1", "box2"])', {
++			loadModule,
++		})
++		expect(result).toEqual({ success: true, result: ['box1', 'box2'] })
++	})
++
+ 	it('completes async exec code (the case that used to report Illegal invocation)', async () => {

@@ -1,0 +1,38 @@
+diff --git a/templates/agent/shared/format/convertTldrawShapesToPeripheralShapes.ts b/templates/agent/shared/format/convertTldrawShapesToPeripheralShapes.ts
+--- a/templates/agent/shared/format/convertTldrawShapesToPeripheralShapes.ts
++++ b/templates/agent/shared/format/convertTldrawShapesToPeripheralShapes.ts
+@@
+-		let didLand = false
+-		for (const group of groups) {
+-			if (group.bounds.includes(item.bounds)) {
+-				group.shapes.push(item.shape)
+-				group.bounds.expand(item.bounds)
+-				group.numberOfShapes++
+-				didLand = true
+-				break
+-			}
+-		}
+-		if (!didLand) {
++		const colliding = groups.filter((group) => group.bounds.collides(item.bounds))
++		if (colliding.length === 0) {
+ 			groups.push({
+ 				shapes: [item.shape],
+ 				bounds: item.bounds,
+ 				numberOfShapes: 1,
+ 			})
++			continue
+ 		}
++
++		const target = colliding[0]
++		target.shapes.push(item.shape)
++		target.bounds.expand(item.bounds)
++		target.numberOfShapes++
++
++		for (let j = 1; j < colliding.length; j++) {
++			const other = colliding[j]
++			target.shapes.push(...other.shapes)
++			target.bounds.expand(other.bounds)
++			target.numberOfShapes += other.numberOfShapes
++			groups.splice(groups.indexOf(other), 1)
++		}
+ 	}
