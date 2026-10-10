@@ -1,0 +1,39 @@
+diff --git a/templates/agent/client/agent/managers/AgentDebugManager.ts b/templates/agent/client/agent/managers/AgentDebugManager.ts
+--- a/templates/agent/client/agent/managers/AgentDebugManager.ts
++++ b/templates/agent/client/agent/managers/AgentDebugManager.ts
+@@
+ import type { AgentAction } from '../../../shared/types/AgentAction'
++import type { BaseAgentPrompt } from '../../../shared/types/AgentPrompt'
+@@
+ 	logCompletedActions: boolean
++	logPromptMetrics: boolean
+@@
+ 	logCompletedActions: false,
++	logPromptMetrics: false,
+ }
+@@
++	exportPromptMetrics(prompt: BaseAgentPrompt) {
++		const encoder = new TextEncoder()
++		const parts = Object.fromEntries(
++			Object.entries(prompt).map(([type, part]) => [
++				type,
++				encoder.encode(JSON.stringify(part)).byteLength,
++			])
++		)
++		const totalBytes = encoder.encode(JSON.stringify(prompt)).byteLength
++		return { totalBytes, parts }
++	}
++
++	logPromptMetrics(prompt: BaseAgentPrompt): void {
++		if (!this.$debugFlags.get().logPromptMetrics) return
++		console.log('[DEBUG] Prompt Metrics:', this.exportPromptMetrics(prompt))
++	}
++
+diff --git a/templates/agent/client/agent/TldrawAgent.ts b/templates/agent/client/agent/TldrawAgent.ts
+--- a/templates/agent/client/agent/TldrawAgent.ts
++++ b/templates/agent/client/agent/TldrawAgent.ts
+@@
+ 		const requestPromise = (async () => {
+ 			const prompt = await this.preparePrompt(request, helpers)
++			this.debug.logPromptMetrics(prompt)
+ 			let incompleteDiff: RecordsDiff<TLRecord> | null = null

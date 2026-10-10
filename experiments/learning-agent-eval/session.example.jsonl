@@ -1,0 +1,7 @@
+{"kind":"prompt","turn":1,"totalBytes":12000,"parts":{"messages":420,"screenshot":6400,"blurry-shapes":1800,"peripheral-shapes":900,"chat-history":700,"user-action-history":300,"other":1480}}
+{"kind":"action","turn":1,"type":"create","complete":true,"error":false}
+{"kind":"action","turn":1,"type":"create","complete":true,"error":false}
+{"kind":"check","turn":1,"spatialCorrect":true,"semanticCorrect":true,"unrelatedRegionChanged":false,"correctiveActions":0,"shapeCountBefore":0,"shapeCountAfter":5,"elapsedMs":2400}
+{"kind":"prompt","turn":2,"totalBytes":15400,"parts":{"messages":500,"screenshot":7100,"blurry-shapes":2300,"peripheral-shapes":1100,"chat-history":1600,"user-action-history":500,"other":2300}}
+{"kind":"action","turn":2,"type":"create","complete":true,"error":false}
+{"kind":"check","turn":2,"spatialCorrect":true,"semanticCorrect":true,"unrelatedRegionChanged":false,"correctiveActions":0,"shapeCountBefore":5,"shapeCountAfter":8,"elapsedMs":2700}
