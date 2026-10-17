@@ -28,8 +28,8 @@ export const ResizeActionUtil = registerActionUtil(
 				!action.shapeIds ||
 				!action.scaleX ||
 				!action.scaleY ||
-				!action.originX ||
-				!action.originY
+				action.originX === undefined ||
+				action.originY === undefined
 			) {
 				return
 			}
